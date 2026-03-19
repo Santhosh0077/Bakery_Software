@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Annam Bakery — Premium Point of Sale Billing System">
+    <title>Annam Bakery — POS Billing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- ═══════════ TOPBAR ═══════════ -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <span class="shop-logo">🧁</span>
+            <h1 class="shop-name" data-en="Annam " data-ta="அன்னம் "><span class="shop-name-text">Annam </span><i
+                    class="shop-name-bakery" data-en="Bakery" data-ta="பேக்கரி">Bakery</i></h1>
+        </div>
+        <div class="topbar-center">
+            <span id="greeting" class="greeting"></span>
+            <span id="liveClock" class="live-clock"></span>
+        </div>
+        <div class="topbar-right">
+            <div id="langToggle" class="lang-toggle">
+                <button class="lang-btn active" data-lang="en">English</button>
+                <button class="lang-btn" data-lang="ta">தமிழ்</button>
+            </div>
+            <button id="notifBell" class="notif-bell" aria-label="Notifications">🔔<span
+                    class="notif-dot"></span></button>
+        </div>
+    </header>
+
+    <!-- ═══════════ MAIN BODY ═══════════ -->
+    <div id="appBody">
+
+        <!-- ─── SIDEBAR ─── -->
+        <nav id="sidebar">
+            <div class="sidebar-main">
+                <button class="sidebar-btn active" data-page="billing" data-tooltip-en="Billing"
+                    data-tooltip-ta="பில்லிங்">
+                    <span class="sidebar-icon">🧾</span>
+                    <span class="sidebar-label" data-en="Billing" data-ta="பில்லிங்">Billing</span>
+                    <span id="cartBubble" class="cart-bubble hidden">0</span>
+                </button>
+                <button class="sidebar-btn" data-page="analytics" data-tooltip-en="Dashboard"
+                    data-tooltip-ta="டாஷ்போர்டு">
+                    <span class="sidebar-icon">📊</span>
+                    <span class="sidebar-label" data-en="Dashboard" data-ta="டாஷ்போர்டு">Dashboard</span>
+                </button>
+                <button class="sidebar-btn" data-page="owner" data-tooltip-en="Products"
+                    data-tooltip-ta="பொருட்கள்">
+                    <span class="sidebar-icon">📦</span>
+                    <span class="sidebar-label" data-en="Products" data-ta="பொருட்கள்">Products</span>
+                </button>
+                <button class="sidebar-btn" data-page="analytics2" data-tooltip-en="Analytics"
+                    data-tooltip-ta="பகுப்பாய்வு">
+                    <span class="sidebar-icon">💹</span>
+                    <span class="sidebar-label" data-en="Analytics" data-ta="பகுப்பாய்வு">Analytics</span>
+                </button>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-bottom">
+                <button class="sidebar-btn" data-page="settings" data-tooltip-en="Settings"
+                    data-tooltip-ta="அமைப்புகள்">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span class="sidebar-label" data-en="Settings" data-ta="அமைப்புகள்">Settings</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- ─── MOBILE BOTTOM NAV ─── -->
+        <nav id="mobileBottomNav" class="mobile-bottom-nav" aria-label="Mobile sections">
+            <button class="mob-nav-btn active" data-page="billing">
+                <span class="mob-nav-icon">🧾</span>
+                <span class="mob-nav-label">Billing</span>
+            </button>
+            <button class="mob-nav-btn" data-page="analytics">
+                <span class="mob-nav-icon">📊</span>
+                <span class="mob-nav-label">Dashboard</span>
+            </button>
+            <button class="mob-nav-btn" data-page="owner">
+                <span class="mob-nav-icon">📦</span>
+                <span class="mob-nav-label">Products</span>
+            </button>
+            <button class="mob-nav-btn" data-page="analytics2">
+                <span class="mob-nav-icon">💹</span>
+                <span class="mob-nav-label">Analytics</span>
+            </button>
+        </nav>
+
+        <!-- ─── MOBILE BILL FAB (Floating button to open bill panel) ─── -->
+        <button id="mobileBillFab" class="mobile-bill-fab hidden">
+            🧾 <span id="mobileBillBadge" class="mob-fab-badge hidden">0</span>
+        </button>
+
+        <!-- ─── PRODUCTS AREA ─── -->
+        <main id="productsArea">
+
+            <!-- Search -->
+            <div id="searchBar" class="search-bar">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Search products / தேடு..." autocomplete="off">
+                <span id="resultCount" class="result-count hidden">0 items</span>
+                <button id="searchClear" class="search-clear hidden" aria-label="Clear search">✕</button>
+            </div>
+
+            <!-- Recent Items Strip -->
+            <div id="recentStrip" class="recent-strip hidden">
+                <span class="recent-label" data-en="Recent:" data-ta="சமீபத்திய:">Recent:</span>
+                <div id="recentItems" class="recent-items"></div>
+            </div>
+
+            <!-- Category Tabs -->
+            <div id="categoryTabs" class="category-tabs">
+                <!-- Populated by JS -->
+            </div>
+
+            <!-- Product Grid -->
+            <div id="productGrid" class="product-grid">
+                <!-- Populated by JS -->
+            </div>
+
+        </main>
+
+        <!-- ─── DASHBOARD PAGE ─── -->
+        <section id="dashboardPage" class="dashboard-page hidden">
+
+            <div class="dash-header">
+                <h2 class="dash-title">📊 <span data-en="Dashboard" data-ta="டாஷ்போர்டு">Dashboard</span></h2>
+                <span id="dashDate" class="dash-date"></span>
+            </div>
+
+            <!-- Stat Cards Row -->
+            <div class="dash-cards">
+                <div class="dash-card dash-card--blue">
+                    <div class="dash-card-icon">📦</div>
+                    <div class="dash-card-info">
+                        <span class="dash-card-value" id="statTotalProducts">32</span>
+                        <span class="dash-card-label" data-en="Total Products" data-ta="மொத்த பொருட்கள்">Total Products</span>
+                    </div>
+                </div>
+                <div class="dash-card dash-card--red">
+                    <div class="dash-card-icon">⚠️</div>
+                    <div class="dash-card-info">
+                        <span class="dash-card-value" id="statLowStock">0</span>
+                        <span class="dash-card-label" data-en="Low Stock" data-ta="குறைந்த இருப்பு">Low Stock</span>
+                    </div>
+                </div>
+                <div class="dash-card dash-card--gold">
+                    <div class="dash-card-icon">🧾</div>
+                    <div class="dash-card-info">
+                        <span class="dash-card-value" id="statTodayBills">0</span>
+                        <span class="dash-card-label" data-en="Today's Bills" data-ta="இன்றைய பில்கள்">Today's Bills</span>
+                    </div>
+                </div>
+                <div class="dash-card dash-card--green">
+                    <div class="dash-card-icon">💰</div>
+                    <div class="dash-card-info">
+                        <span class="dash-card-value" id="statRevenue">₹0</span>
+                        <span class="dash-card-label" data-en="Today's Revenue" data-ta="இன்றைய வருவாய்">Today's Revenue</span>
+                    </div>
+                </div>
+                <div class="dash-card dash-card--pink">
+                    <div class="dash-card-icon">🏆</div>
+                    <div class="dash-card-info">
+                        <span class="dash-card-value" id="statTopItem">—</span>
+                        <span class="dash-card-label" data-en="Top Seller" data-ta="சிறந்த விற்பனை">Top Seller</span>
+                    </div>
+                </div>
+                <div class="dash-card dash-card--purple">
+                    <div class="dash-card-icon">🏪</div>
+                    <div class="dash-card-info">
+                        <span class="dash-card-value" id="statCategories">7</span>
+                        <span class="dash-card-label" data-en="Categories" data-ta="வகைகள்">Categories</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Row -->
+            <div class="dash-bottom">
+
+                <!-- Low Stock Alert -->
+                <div class="dash-panel">
+                    <div class="dash-panel-header">
+                        <span>⚠️ <b data-en="Low Stock Alert" data-ta="குறைந்த இருப்பு எச்சரிக்கை">Low Stock Alert</b></span>
+                        <span id="lowStockCount" class="dash-badge dash-badge--red">0</span>
+                    </div>
+                    <div id="lowStockList" class="dash-list"></div>
+                </div>
+
+                <!-- Recent Bills -->
+                <div class="dash-panel">
+                    <div class="dash-panel-header">
+                        <span>🧾 <b data-en="Recent Bills" data-ta="சமீபத்திய பில்கள்">Recent Bills</b></span>
+                        <span id="recentBillsCount" class="dash-badge dash-badge--gold">0</span>
+                    </div>
+                    <div id="recentBillsList" class="dash-list"></div>
+                </div>
+
+                <!-- Category Breakdown -->
+                <div class="dash-panel">
+                    <div class="dash-panel-header">
+                        <span>📂 <b data-en="Category Breakdown" data-ta="வகை விவரம்">Category Breakdown</b></span>
+                    </div>
+                    <div id="categoryBreakdown" class="dash-chart"></div>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ─── OWNER / MANAGE PAGE ─── -->
+        <section id="ownerPage" class="owner-page hidden">
+
+            <!-- Header + Stats Bar -->
+            <div class="pr-topbar">
+                <div class="pr-topbar-left">
+                    <h2 class="owner-title">📦 Products</h2>
+                </div>
+                <div class="pr-stats-bar">
+                    <div class="pr-stat">
+                        <span id="prStatTotal" class="pr-stat-val">0</span>
+                        <span class="pr-stat-lbl">Total Items</span>
+                    </div>
+                    <div class="pr-stat-div"></div>
+                    <div class="pr-stat">
+                        <span id="prStatLow" class="pr-stat-val pr-stat-warn">0</span>
+                        <span class="pr-stat-lbl">Low Stock</span>
+                    </div>
+                    <div class="pr-stat-div"></div>
+                    <div class="pr-stat">
+                        <span id="prStatOut" class="pr-stat-val pr-stat-danger">0</span>
+                        <span class="pr-stat-lbl">Out of Stock</span>
+                    </div>
+                    <div class="pr-stat-div"></div>
+                    <div class="pr-stat">
+                        <span id="prStatCats" class="pr-stat-val">0</span>
+                        <span class="pr-stat-lbl">Categories</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compact Add Form -->
+            <div class="pr-add-bar">
+                <span class="pr-add-title">➕ New Item</span>
+                <input type="text" id="ownerName" placeholder="Name (English)" autocomplete="off" class="pr-input pr-input--grow">
+                <input type="text" id="ownerNameTa" placeholder="Tamil name" autocomplete="off" class="pr-input pr-input--grow">
+                <select id="ownerCategory" class="pr-input pr-input--cat">
+                    <option value="bread">🍞 Bread</option>
+                    <option value="cake">🎂 Cake</option>
+                    <option value="pastry">🥐 Pastry</option>
+                    <option value="cookies">🍪 Cookies</option>
+                    <option value="snacks">🥧 Snacks</option>
+                    <option value="drinks">☕ Drinks</option>
+                    <option value="sweets">🍩 Sweets</option>
+                </select>
+                <input type="number" id="ownerPrice" placeholder="₹ Price" min="1" class="pr-input pr-input--sm">
+                <input type="number" id="ownerStock" placeholder="Stock" min="0" class="pr-input pr-input--sm">
+                <input type="text"   id="ownerEmoji" placeholder="🍞" maxlength="2" class="pr-input pr-input--emoji">
+                <button id="ownerAddBtn" class="pr-add-btn">Add Item</button>
+            </div>
+
+            <!-- Filter & Sort Bar -->
+            <div class="pr-filter-bar">
+                <div class="pr-cat-chips" id="prCatChips">
+                    <button class="pr-chip active" data-cat="all">All</button>
+                    <!-- More chips added by JS -->
+                </div>
+                <div class="pr-filter-right">
+                    <input type="text" id="ownerSearch" placeholder="🔍 Search..." class="pr-search-input">
+                    <select id="prSort" class="pr-sort-select">
+                        <option value="name">Sort: A–Z</option>
+                        <option value="price-asc">Price: Low–High</option>
+                        <option value="price-desc">Price: High–Low</option>
+                        <option value="stock-asc">Stock: Low–High</option>
+                        <option value="stock-desc">Stock: High–Low</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Product Grid -->
+            <div id="ownerProductList" class="pr-grid"></div>
+
+        </section>
+
+
+        <!-- ─── ANALYTICS PAGE ─── -->
+        <section id="analyticsPage" class="analytics-page hidden">
+
+            <div class="an-header">
+                <div>
+                    <h2 class="an-title">💹 Analytics</h2>
+                    <span class="an-subtitle">Sales performance & payment breakdown</span>
+                </div>
+                <span id="anDate" class="an-date-badge"></span>
+            </div>
+
+            <!-- Period Toggle -->
+            <div class="an-period-tabs">
+                <button class="an-tab active" data-period="today">Today</button>
+                <button class="an-tab" data-period="month">This Month</button>
+                <button class="an-tab" data-period="year">This Year</button>
+                <button class="an-tab" data-period="all">All Time</button>
+            </div>
+
+            <!-- Sales Summary Cards -->
+            <div class="an-summary-cards">
+                <div class="an-card an-card--main">
+                    <div class="an-card-label">Total Revenue</div>
+                    <div class="an-card-value" id="anRevenue">₹0</div>
+                    <div class="an-card-sub" id="anBillCount">0 bills</div>
+                </div>
+                <div class="an-card an-card--cash">
+                    <div class="an-card-label">💵 Cash</div>
+                    <div class="an-card-value" id="anCash">₹0</div>
+                    <div class="an-card-sub" id="anCashCount">0 bills</div>
+                </div>
+                <div class="an-card an-card--gpay">
+                    <div class="an-card-label">📱 GPay / UPI</div>
+                    <div class="an-card-value" id="anGpay">₹0</div>
+                    <div class="an-card-sub" id="anGpayCount">0 bills</div>
+                </div>
+                <div class="an-card an-card--avg">
+                    <div class="an-card-label">Avg. Bill Value</div>
+                    <div class="an-card-value" id="anAvg">₹0</div>
+                    <div class="an-card-sub">per transaction</div>
+                </div>
+                <div class="an-card an-card--top">
+                    <div class="an-card-label">Peak Hour</div>
+                    <div class="an-card-value" id="anPeakHour">—</div>
+                    <div class="an-card-sub">busiest time</div>
+                </div>
+                <div class="an-card an-card--disc">
+                    <div class="an-card-label">Total Discounts</div>
+                    <div class="an-card-value" id="anDiscount">₹0</div>
+                    <div class="an-card-sub" id="anDiscSub">given away</div>
+                </div>
+            </div>
+
+            <!-- Payment Split Bar -->
+            <div class="an-split-panel">
+                <div class="an-split-header">
+                    <span>Payment Method Split</span>
+                    <span id="anSplitLabel" class="an-split-label">—</span>
+                </div>
+                <div class="an-split-bar">
+                    <div class="an-split-cash" id="anSplitCash" style="width:50%">Cash</div>
+                    <div class="an-split-gpay" id="anSplitGpay" style="width:50%">GPay</div>
+                </div>
+            </div>
+
+            <!-- Bottom: Recent Transactions + Top Products -->
+            <div class="an-bottom">
+
+                <!-- Recent Transactions -->
+                <div class="an-panel">
+                    <div class="an-panel-header">
+                        🧾 Recent Transactions
+                        <span id="anTxCount" class="an-badge">0</span>
+                    </div>
+                    <div id="anTransactionList" class="an-tx-list"></div>
+                </div>
+
+                <!-- Top Products -->
+                <div class="an-panel">
+                    <div class="an-panel-header">🏆 Top Products by Popularity</div>
+                    <div id="anTopProducts" class="an-top-list"></div>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ─── BILL PANEL ─── -->
+        <aside id="billPanel">
+
+            <!-- Bill Header -->
+            <div class="bill-header">
+                <div class="bill-title">
+                    <span>🧾</span>
+                    <span data-en="New Bill" data-ta="புதிய பில்">New Bill</span>
+                </div>
+                <div class="bill-meta">
+                    <span id="billDate" class="bill-date"></span>
+                    <span id="billNumber" class="bill-number"></span>
+                </div>
+            </div>
+
+            <!-- Bill Body -->
+            <div id="billBody" class="bill-body">
+
+                <!-- Empty State -->
+                <div id="emptyCart" class="empty-cart">
+                    <div class="empty-cart-icon">🛒</div>
+                    <p data-en="Add items to start billing" data-ta="பில்லிங் தொடங்க பொருட்களைச் சேர்க்கவும்">Add items
+                        to start billing</p>
+                </div>
+
+                <!-- Bill Items -->
+                <div id="billItems" class="bill-items"></div>
+
+            </div>
+
+            <!-- Bill Footer -->
+            <div id="billFooter" class="bill-footer hidden">
+
+                <!-- Discount Row -->
+                <div class="discount-row">
+                    <label data-en="Discount" data-ta="தள்ளுபடி">Discount</label>
+                    <div class="discount-controls">
+                        <div class="discount-toggle">
+                            <button class="disc-btn active" data-type="percent">%</button>
+                            <button class="disc-btn" data-type="amount">₹</button>
+                        </div>
+                        <input type="number" id="discountInput" value="0" min="0" step="1">
+                    </div>
+                </div>
+
+                <div class="bill-totals">
+                    <div class="total-row sub">
+                        <span data-en="Subtotal" data-ta="கூட்டுத்தொகை">Subtotal</span>
+                        <span id="subtotalAmt" class="mono">₹0.00</span>
+                    </div>
+                    <div class="total-row disc" id="discountRow">
+                        <span data-en="Discount" data-ta="தள்ளுபடி">Discount</span>
+                        <span id="discountAmt" class="mono red">−₹0.00</span>
+                    </div>
+                    <div class="total-divider"></div>
+                    <div class="total-row grand">
+                        <span data-en="TOTAL" data-ta="மொத்தம்">TOTAL</span>
+                        <span id="grandTotal" class="mono grand-total">₹0.00</span>
+                    </div>
+                </div>
+
+                <button id="generateBillBtn" class="generate-bill-btn" disabled>
+                    <span data-en="🖨️ Generate Bill" data-ta="🖨️ பில் உருவாக்கு">🖨️ Generate Bill</span>
+                </button>
+
+            </div>
+
+            <!-- ═══ Payment Modal (inside bill panel) ═══ -->
+            <div id="paymentModal" class="payment-modal hidden">
+                <div class="payment-card">
+                    <div class="payment-header">
+                        <span data-en="Payment" data-ta="பணம் செலுத்துதல்">Payment</span>
+                        <button id="paymentClose" class="payment-close">✕</button>
+                    </div>
+                    <div class="payment-total">
+                        <span data-en="Total Amount" data-ta="மொத்த தொகை">Total Amount</span>
+                        <span id="paymentTotalAmt" class="payment-total-num">₹0.00</span>
+                    </div>
+                    <div class="payment-options">
+                        <button class="pay-option selected" data-method="cash">
+                            <span class="pay-icon">💵</span>
+                            <span class="pay-label" data-en="CASH" data-ta="பணம்">CASH</span>
+                        </button>
+                        <button class="pay-option" data-method="gpay">
+                            <span class="pay-icon">📱</span>
+                            <span class="pay-label" data-en="GPay" data-ta="ஜிபே">GPay</span>
+                        </button>
+                    </div>
+                    <div id="cashSection" class="cash-section">
+                        <label data-en="Cash Received ₹" data-ta="பெற்ற பணம் ₹">Cash Received ₹</label>
+                        <input type="number" id="cashInput" placeholder="0" min="0" step="1">
+                        <div id="changeDisplay" class="change-display">
+                            <span data-en="Change:" data-ta="மீதம்:">Change:</span>
+                            <span id="changeAmt" class="change-amt">₹0.00</span>
+                        </div>
+                    </div>
+                    <button id="confirmPayBtn" class="confirm-pay-btn" disabled>
+                        <span data-en="✅ Confirm & Complete" data-ta="✅ உறுதிசெய் & முடி">✅ Confirm & Complete</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ═══ Success Overlay (inside bill panel) ═══ -->
+            <div id="successOverlay" class="success-overlay hidden">
+                <div class="success-icon">✅</div>
+                <h2 class="success-title" data-en="Bill Complete!" data-ta="பில் முடிந்தது!">Bill Complete!</h2>
+                <div id="successBillNo" class="success-bill-no"></div>
+                <div id="successChange" class="success-change"></div>
+                <button id="newBillBtn" class="new-bill-btn">
+                    <span data-en="+ New Bill" data-ta="+ புதிய பில்">+ New Bill</span>
+                </button>
+            </div>
+
+        </aside>
+    </div>
+
+    <!-- ═══ Toast Container ═══ -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- ═══ Quantity Picker Modal ═══ -->
+    <div id="qtyModal" class="qty-modal hidden">
+        <div class="qty-card">
+            <h3 data-en="How many?" data-ta="எத்தனை?">How many?</h3>
+            <div id="qtyDisplay" class="qty-display">1</div>
+            <div class="qty-numpad">
+                <button class="qty-num" data-num="1">1</button>
+                <button class="qty-num" data-num="2">2</button>
+                <button class="qty-num" data-num="3">3</button>
+                <button class="qty-num" data-num="4">4</button>
+                <button class="qty-num" data-num="5">5</button>
+                <button class="qty-num" data-num="6">6</button>
+                <button class="qty-num" data-num="7">7</button>
+                <button class="qty-num" data-num="8">8</button>
+                <button class="qty-num" data-num="9">9</button>
+                <button class="qty-num qty-clear" data-num="C">C</button>
+                <button class="qty-num" data-num="0">0</button>
+                <button class="qty-num qty-ok" data-num="OK">✓</button>
+            </div>
+            <button id="qtyCancel" class="qty-cancel" data-en="Cancel" data-ta="ரத்து செய்">Cancel</button>
+        </div>
+    </div>
+
+    <!-- ═══ Add Stock Modal ═══ -->
+    <div id="addStockModal" class="as-backdrop hidden">
+        <div class="as-modal">
+            <div class="as-modal-header">
+                <span id="asProductEmoji" class="as-emoji">🍞</span>
+                <div>
+                    <div id="asProductName" class="as-name">Product</div>
+                    <div id="asCurrentStock" class="as-cur-stock">Current: 0 units</div>
+                </div>
+                <button id="asCloseBtn" class="as-close">✕</button>
+            </div>
+            <div class="as-body">
+                <label class="as-label">Quantity to Add</label>
+                <div class="as-qty-row">
+                    <button id="asQtyMinus" class="as-qty-btn">−</button>
+                    <input id="asQtyInput" type="number" class="as-qty-input" value="1" min="1" max="9999">
+                    <button id="asQtyPlus" class="as-qty-btn">+</button>
+                </div>
+                <div id="asNewStockPreview" class="as-preview">New total: 1 units</div>
+            </div>
+            <div class="as-footer">
+                <button id="asCancelBtn" class="as-btn as-btn--cancel">Cancel</button>
+                <button id="asConfirmBtn" class="as-btn as-btn--confirm">✓ Add Stock</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
