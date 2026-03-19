@@ -196,8 +196,15 @@ document.addEventListener('DOMContentLoaded', () => {
   initOwnerPage();
   initAnalytics();
   initAddStockModal();
+  removeAnalyticsTopProducts();
   navigateToPage('billing');
 });
+
+function removeAnalyticsTopProducts() {
+  const topProducts = $('#anTopProducts');
+  const panel = topProducts ? topProducts.closest('.an-panel') : null;
+  if (panel) panel.remove();
+}
 
 // ─── Clock ──────────────────────────────────
 function initClock() {
@@ -238,6 +245,10 @@ function initLanguage() {
       applyLanguage();
       renderProducts();
       renderBillItems();
+      renderOwnerProducts();
+      renderDashboard();
+      renderAnalytics(currentAnPeriod);
+      loadRecentItems();
       if (window._updateGreeting) window._updateGreeting();
     });
   });
@@ -259,6 +270,74 @@ function applyLanguage() {
       }
     }
   });
+  $$('[data-en-placeholder]').forEach(el => {
+    const text = el.getAttribute(`data-${currentLang}-placeholder`);
+    if (text !== null) el.setAttribute('placeholder', text);
+  });
+
+  const mobileNavLabels = $$('.mob-nav-label');
+  const mobileNavText = currentLang === 'ta'
+    ? ['பில்லிங்', 'டாஷ்போர்டு', 'பொருட்கள்', 'பகுப்பாய்வு']
+    : ['Billing', 'Dashboard', 'Products', 'Analytics'];
+  mobileNavLabels.forEach((el, index) => {
+    if (mobileNavText[index]) el.textContent = mobileNavText[index];
+  });
+
+  const setText = (selector, text) => {
+    const el = $(selector);
+    if (el) el.textContent = text;
+  };
+  const setPlaceholder = (selector, text) => {
+    const el = $(selector);
+    if (el) el.setAttribute('placeholder', text);
+  };
+
+  setText('.pr-add-title', currentLang === 'ta' ? '➕ புதிய பொருள்' : '➕ New Item');
+  setText('#ownerAddBtn', currentLang === 'ta' ? 'பொருள் சேர்' : 'Add Item');
+  setPlaceholder('#ownerName', currentLang === 'ta' ? 'பெயர் (ஆங்கிலம்)' : 'Name (English)');
+  setPlaceholder('#ownerNameTa', currentLang === 'ta' ? 'தமிழ் பெயர்' : 'Tamil name');
+  setPlaceholder('#ownerPrice', currentLang === 'ta' ? '₹ விலை' : '₹ Price');
+  setPlaceholder('#ownerStock', currentLang === 'ta' ? 'இருப்பு' : 'Stock');
+  setPlaceholder('#ownerSearch', currentLang === 'ta' ? '🔍 தேடு...' : '🔍 Search...');
+
+  const ownerCategory = $('#ownerCategory');
+  if (ownerCategory) {
+    const categoryText = {
+      bread: { en: '🍞 Bread', ta: '🍞 ரொட்டி' },
+      cake: { en: '🎂 Cake', ta: '🎂 கேக்' },
+      pastry: { en: '🥐 Pastry', ta: '🥐 பேஸ்ட்ரி' },
+      cookies: { en: '🍪 Cookies', ta: '🍪 குக்கீஸ்' },
+      snacks: { en: '🥧 Snacks', ta: '🥧 ஸ்நாக்ஸ்' },
+      drinks: { en: '☕ Drinks', ta: '☕ பானங்கள்' },
+      sweets: { en: '🍩 Sweets', ta: '🍩 இனிப்புகள்' }
+    };
+    [...ownerCategory.options].forEach(option => {
+      const labels = categoryText[option.value];
+      if (labels) option.textContent = currentLang === 'ta' ? labels.ta : labels.en;
+    });
+  }
+
+  const prStatLabels = $$('.pr-stat-lbl');
+  const prStatText = currentLang === 'ta'
+    ? ['மொத்தம்', 'குறைந்த இருப்பு', 'இருப்பு இல்லை', 'வகைகள்']
+    : ['Total', 'Low Stock', 'Out of Stock', 'Categories'];
+  prStatLabels.forEach((el, index) => {
+    if (prStatText[index]) el.textContent = prStatText[index];
+  });
+
+  const prSort = $('#prSort');
+  if (prSort) {
+    const sortText = currentLang === 'ta'
+      ? ['வரிசை: அ-ஹ', 'விலை: குறைவு-அதிகம்', 'விலை: அதிகம்-குறைவு', 'இருப்பு: குறைவு-அதிகம்', 'இருப்பு: அதிகம்-குறைவு']
+      : ['Sort: A-Z', 'Price: Low-High', 'Price: High-Low', 'Stock: Low-High', 'Stock: High-Low'];
+    [...prSort.options].forEach((option, index) => {
+      if (sortText[index]) option.textContent = sortText[index];
+    });
+  }
+
+  setText('.an-title', currentLang === 'ta' ? '💹 பகுப்பாய்வு' : '💹 Analytics');
+  setText('.an-subtitle', currentLang === 'ta' ? 'விற்பனை செயல்திறன் மற்றும் கட்டண பகிர்வு' : 'Sales performance & payment breakdown');
+
   // Update sidebar tooltips
   $$('.sidebar-btn[data-tooltip-en]').forEach(btn => {
     btn.style.setProperty('--tooltip', `"${btn.getAttribute(`data-tooltip-${currentLang}`)}"`);
@@ -391,6 +470,7 @@ function addToCart(productId, qty = 1, cardEl = null) {
   }
   saveCart();
   updateCartUI();
+  animateProductToBill(productId, cardEl);
 
   // Card flash animation
   if (cardEl) {
@@ -418,6 +498,40 @@ function addToCart(productId, qty = 1, cardEl = null) {
 
   // Save to recent
   saveRecentItem(productId);
+}
+
+function animateProductToBill(productId, cardEl) {
+  if (!cardEl || typeof cardEl.getBoundingClientRect !== 'function') return;
+  if (typeof document?.createElement !== 'function' || typeof requestAnimationFrame !== 'function') return;
+
+  const product = PRODUCTS.find(p => p.id === productId);
+  const sourceRect = cardEl.getBoundingClientRect();
+  if (!sourceRect || !sourceRect.width || !sourceRect.height) return;
+
+  const targetEl = isMobileView() ? (dom.mobileBillFab || dom.billPanel) : dom.billPanel;
+  if (!targetEl || typeof targetEl.getBoundingClientRect !== 'function') return;
+
+  const targetRect = targetEl.getBoundingClientRect();
+  if (!targetRect || (!targetRect.width && !targetRect.height)) return;
+
+  const ghost = document.createElement('div');
+  ghost.className = 'cart-fly-ghost';
+  ghost.textContent = product?.emoji || '🧾';
+  ghost.style.left = `${sourceRect.left + sourceRect.width / 2 - 22}px`;
+  ghost.style.top = `${sourceRect.top + sourceRect.height / 2 - 22}px`;
+  document.body.appendChild(ghost);
+
+  const deltaX = targetRect.left + targetRect.width / 2 - (sourceRect.left + sourceRect.width / 2);
+  const deltaY = targetRect.top + targetRect.height / 2 - (sourceRect.top + sourceRect.height / 2);
+
+  requestAnimationFrame(() => {
+    ghost.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(0.38)`;
+    ghost.style.opacity = '0.15';
+  });
+
+  targetEl.classList.add('bill-target-pulse');
+  setTimeout(() => targetEl.classList.remove('bill-target-pulse'), 520);
+  setTimeout(() => ghost.remove(), 560);
 }
 
 function removeFromCart(productId) {
@@ -602,7 +716,7 @@ function updateCartBubble() {
   }
 
   if (dom.mobileBillFab) {
-    const shouldShowFab = false;
+    const shouldShowFab = isMobileView() && currentPage === 'billing';
     dom.mobileBillFab.classList.toggle('hidden', !shouldShowFab);
   }
 }
@@ -1054,13 +1168,7 @@ function initEventListeners() {
         const page = btn.dataset.page;
         if (!page || page === 'settings') return;
         if (page === 'billing' && isMobileView()) {
-          if (currentPage !== 'billing') {
-            navigateToPage('billing');
-            setBillPanelOpen(true);
-            return;
-          }
-
-          setBillPanelOpen(!dom.billPanel.classList.contains('mob-open'));
+          navigateToPage('billing');
           return;
         }
         navigateToPage(page);
@@ -1225,11 +1333,11 @@ function buildCategoryChips() {
   const container = $('#prCatChips');
   if (!container) return;
   const cats = [...new Set(PRODUCTS.map(p => p.cat))];
-  container.innerHTML = `<button class="pr-chip ${prActiveCat === 'all' ? 'active' : ''}" data-cat="all">All (${PRODUCTS.length})</button>`;
+  container.innerHTML = `<button class="pr-chip ${prActiveCat === 'all' ? 'active' : ''}" data-cat="all">${currentLang === 'ta' ? 'அனைத்தும்' : 'All'} (${PRODUCTS.length})</button>`;
   cats.forEach(cat => {
     const catLabel = CATEGORIES.find(c => c.key === cat);
     const count = PRODUCTS.filter(p => p.cat === cat).length;
-    const label = catLabel ? `${catLabel.emoji || ''} ${catLabel.en}` : cat;
+    const label = catLabel ? `${catLabel.emoji || ''} ${currentLang === 'ta' ? catLabel.ta : catLabel.en}` : cat;
     container.innerHTML += `<button class="pr-chip ${prActiveCat === cat ? 'active' : ''}" data-cat="${cat}">${label} (${count})</button>`;
   });
 }
@@ -1308,6 +1416,78 @@ function renderOwnerProducts() {
 }
 
 // ─── Add Stock Modal ────────────────────────
+function renderOwnerProducts() {
+  const grid = $('#ownerProductList');
+  if (!grid) return;
+
+  const search = ($('#ownerSearch')?.value || '').toLowerCase();
+  const sort = $('#prSort')?.value || 'name';
+  let products = [...PRODUCTS];
+
+  if (prActiveCat !== 'all') products = products.filter(p => p.cat === prActiveCat);
+  if (search) {
+    products = products.filter(p =>
+      p.name_en.toLowerCase().includes(search) || p.name_ta.includes(search) || p.cat.includes(search)
+    );
+  }
+
+  products.sort((a, b) => {
+    if (sort === 'price-asc') return a.price - b.price;
+    if (sort === 'price-desc') return b.price - a.price;
+    if (sort === 'stock-asc') return a.stock - b.stock;
+    if (sort === 'stock-desc') return b.stock - a.stock;
+    return a.name_en.localeCompare(b.name_en);
+  });
+
+  const total = PRODUCTS.length;
+  const low = PRODUCTS.filter(p => p.stock > 0 && p.stock <= 5).length;
+  const out = PRODUCTS.filter(p => p.stock === 0).length;
+  const cats = new Set(PRODUCTS.map(p => p.cat)).size;
+  const s = id => $('#' + id);
+  if (s('prStatTotal')) s('prStatTotal').textContent = total;
+  if (s('prStatLow')) s('prStatLow').textContent = low;
+  if (s('prStatOut')) s('prStatOut').textContent = out;
+  if (s('prStatCats')) s('prStatCats').textContent = cats;
+
+  buildCategoryChips();
+  grid.innerHTML = '';
+
+  if (products.length === 0) {
+    grid.innerHTML = `<div class="an-empty" style="grid-column:1/-1">${currentLang === 'ta' ? 'பொருட்கள் கிடைக்கவில்லை' : 'No products found'}</div>`;
+    return;
+  }
+
+  products.forEach(p => {
+    const catLabel = CATEGORIES.find(c => c.key === p.cat);
+    const stockClass = p.stock === 0 ? 'out' : p.stock <= 5 ? 'low' : 'ok';
+    const stockLabel = currentLang === 'ta'
+      ? (p.stock === 0 ? 'இருப்பு இல்லை' : p.stock <= 5 ? `${p.stock} · குறைவு` : `${p.stock} யூனிட்`)
+      : (p.stock === 0 ? 'Out of Stock' : p.stock <= 5 ? `${p.stock} · Low` : `${p.stock} units`);
+    const card = document.createElement('div');
+    card.className = 'pr-card';
+    card.dataset.productId = p.id;
+    card.innerHTML = `
+      <div class="pr-card-top">
+        <span class="pr-card-emoji">${p.emoji}</span>
+        <span class="pr-card-badge ${stockClass}">${stockLabel}</span>
+      </div>
+      <div class="pr-card-name">${currentLang === 'ta' ? p.name_ta : p.name_en}</div>
+      <div class="pr-card-cat">${currentLang === 'ta' ? p.name_en : p.name_ta}</div>
+      <div class="pr-card-cat">${catLabel ? (currentLang === 'ta' ? catLabel.ta : catLabel.en) : p.cat}</div>
+      <div class="pr-card-footer">
+        <span class="pr-card-price">₹${p.price}</span>
+      </div>
+      <button class="owner-add-stock-btn">${currentLang === 'ta' ? '+ இருப்பு சேர்' : '+ Add Stock'}</button>
+    `;
+
+    card.querySelector('.owner-add-stock-btn').addEventListener('click', () => {
+      openAddStockModal(p.id);
+    });
+
+    grid.appendChild(card);
+  });
+}
+
 let addStockTargetId = null;
 
 function initAddStockModal() {
@@ -1497,4 +1677,103 @@ function renderAnalytics(period) {
       </div>`;
   });
 }
+
+const baseRenderAnalytics = renderAnalytics;
+renderAnalytics = function(period) {
+  baseRenderAnalytics(period);
+
+  const topList = $('#anTopProducts');
+  if (!topList) return;
+
+  const sorted = [...PRODUCTS].sort((a, b) => (b.popular || 0) - (a.popular || 0)).slice(0, 10);
+  const maxPop = sorted[0]?.popular || 1;
+
+  if (sorted.length === 0) {
+    topList.innerHTML = '<div class="an-empty">No product data yet</div>';
+    return;
+  }
+
+  topList.innerHTML = '';
+  sorted.forEach((p, i) => {
+    const pct = maxPop > 0 ? ((p.popular || 0) / maxPop) * 100 : 0;
+    const tierClass = i === 0 ? 'is-first' : i === 1 ? 'is-second' : i === 2 ? 'is-third' : '';
+    const crown = i === 0 ? '👑' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`;
+    const category = CATEGORIES.find(c => c.key === p.cat)?.en || p.cat;
+
+    topList.innerHTML += `
+      <article class="an-top-card ${tierClass}">
+        <div class="an-top-head">
+          <span class="an-top-rank">${crown}</span>
+          <span class="an-top-emoji">${p.emoji}</span>
+          <div class="an-top-info">
+            <div class="an-top-name">${p.name_en}</div>
+            <div class="an-top-meta">
+              <span class="an-top-score">${Math.round(p.popular || 0)} popularity</span>
+              <span class="an-top-dot"></span>
+              <span class="an-top-price">₹${p.price}</span>
+            </div>
+          </div>
+        </div>
+        <div class="an-top-bar-track">
+          <div class="an-top-bar-fill" style="width:${pct}%"></div>
+        </div>
+        <div class="an-top-foot">
+          <span class="an-top-percent">${pct.toFixed(0)}% of top seller</span>
+          <span class="an-top-category">${category}</span>
+        </div>
+      </article>`;
+  });
+};
+
+const visibleTopProductsRender = renderAnalytics;
+renderAnalytics = function(period) {
+  visibleTopProductsRender(period);
+
+  const topList = $('#anTopProducts');
+  if (!topList) return;
+
+  const sorted = [...PRODUCTS].sort((a, b) => (b.popular || 0) - (a.popular || 0)).slice(0, 10);
+  const maxPop = sorted[0]?.popular || 1;
+
+  if (sorted.length === 0) {
+    topList.innerHTML = '<div class="an-empty">No product data yet</div>';
+    return;
+  }
+
+  topList.innerHTML = '';
+  sorted.forEach((p, i) => {
+    const pct = maxPop > 0 ? ((p.popular || 0) / maxPop) * 100 : 0;
+    const tierClass = i === 0 ? 'is-first' : i === 1 ? 'is-second' : i === 2 ? 'is-third' : '';
+    const category = CATEGORIES.find(c => c.key === p.cat);
+    const name = currentLang === 'ta' ? p.name_ta : p.name_en;
+    const subName = currentLang === 'ta' ? p.name_en : p.name_ta;
+    const categoryName = category ? (currentLang === 'ta' ? category.ta : category.en) : p.cat;
+    const popularityText = currentLang === 'ta' ? 'பிரபல மதிப்பெண்' : 'Popularity Score';
+    const compareText = currentLang === 'ta' ? 'முதல் இடத்துடன் ஒப்பீடு' : 'vs top seller';
+
+    topList.innerHTML += `
+      <article class="an-top-card ${tierClass}">
+        <div class="an-top-accent"></div>
+        <div class="an-top-head">
+          <span class="an-top-rank">#${i + 1}</span>
+          <span class="an-top-emoji">${p.emoji}</span>
+          <div class="an-top-info">
+            <div class="an-top-name">${name}</div>
+            <div class="an-top-subname">${subName}</div>
+          </div>
+        </div>
+        <div class="an-top-stats">
+          <span class="an-top-score">${popularityText}: ${Math.round(p.popular || 0)}</span>
+          <span class="an-top-price">₹${p.price}</span>
+          <span class="an-top-category">${categoryName}</span>
+        </div>
+        <div class="an-top-bar-track">
+          <div class="an-top-bar-fill" style="width:${pct}%"></div>
+        </div>
+        <div class="an-top-foot">
+          <span class="an-top-percent">${pct.toFixed(0)}% ${compareText}</span>
+        </div>
+      </article>`;
+  });
+};
 

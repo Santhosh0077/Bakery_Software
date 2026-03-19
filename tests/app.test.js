@@ -101,7 +101,7 @@ test('navigateToPage syncs section visibility and active navigation states', () 
   assert.equal(app.getCurrentPage(), 'billing');
   assert.equal(app.dom.productsArea.style.display, '');
   assert.equal(app.dom.billPanel.style.display, '');
-  assert.equal(app.dom.mobileBillFab.classList.contains('hidden'), true);
+  assert.equal(app.dom.mobileBillFab.classList.contains('hidden'), false);
 });
 
 test('filterBills separates today, month, year, and all-time bills', () => {
