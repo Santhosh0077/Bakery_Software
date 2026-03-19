@@ -602,7 +602,7 @@ function updateCartBubble() {
   }
 
   if (dom.mobileBillFab) {
-    const shouldShowFab = isMobileView() && currentPage === 'billing';
+    const shouldShowFab = false;
     dom.mobileBillFab.classList.toggle('hidden', !shouldShowFab);
   }
 }
@@ -1053,7 +1053,13 @@ function initEventListeners() {
       btn.addEventListener('click', () => {
         const page = btn.dataset.page;
         if (!page || page === 'settings') return;
-        if (page === 'billing' && currentPage === 'billing' && isMobileView()) {
+        if (page === 'billing' && isMobileView()) {
+          if (currentPage !== 'billing') {
+            navigateToPage('billing');
+            setBillPanelOpen(true);
+            return;
+          }
+
           setBillPanelOpen(!dom.billPanel.classList.contains('mob-open'));
           return;
         }
